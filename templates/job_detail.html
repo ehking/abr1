@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}جاب {{ job.id }}{% endblock %}
+{% block extra_head %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function updateStatus() {
+        fetch("{{ url_for('jobs_status_json', job_id=job.id) }}")
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+                document.getElementById("status-text").innerText = data.status;
+                document.getElementById("status-badge").className = "badge " + data.status;
+                document.getElementById("progress-fill").style.width = (data.progress || 0) + "%";
+                document.getElementById("progress-label").innerText = (data.progress || 0) + "%";
+                document.getElementById("message-text").innerText = data.message || "";
+
+                if (data.status === "done" || data.status === "error") {
+                    return; // stop polling
+                }
+                setTimeout(updateStatus, 3000);
+            })
+            .catch(err => {
+                console.error(err);
+                setTimeout(updateStatus, 5000);
+            });
+    }
+    setTimeout(updateStatus, 1000);
+});
+</script>
+{% endblock %}
+{% block content %}
+
+<div class="card">
+    <h2>وضعیت جاب {{ job.id }}</h2>
+    <p style="font-size:12px;color:#9ca3af;margin-top:0;">
+        پروژه:
+        {% if job.project %}
+          <a href="{{ url_for('project_detail', project_id=job.project.id) }}">{{ job.project.name }}</a>
+        {% else %}
+          -
+        {% endif %}
+    </p>
+
+    <div style="margin-bottom:6px;">
+        <span id="status-badge" class="badge {{ job.status }}"><span id="status-text">{{ job.status }}</span></span>
+    </div>
+
+    <div class="progress-bar-container" style="margin-bottom:4px;">
+        <div id="progress-fill" class="progress-bar-fill" style="width: {{ job.progress }}%;"></div>
+    </div>
+    <div class="progress-text">
+        پیشرفت: <span id="progress-label">{{ job.progress }}%</span>
+    </div>
+
+    <p id="message-text" style="font-size:12px;color:#e5e7eb;margin-top:8px;">
+        {{ job.message }}
+    </p>
+
+    {% if job.status == "error" and job.error %}
+    <p style="font-size:11px;color:#fca5a5;white-space:pre-wrap;">
+        {{ job.error }}
+    </p>
+    {% endif %}
+
+    <div style="margin-top:12px;font-size:11px;color:#9ca3af;">
+        <strong>فایل صوتی:</strong>
+        <code>{{ job.audio_path }}</code><br>
+        <strong>فایل ویدیوی خام:</strong>
+        <code>{{ job.video_path }}</code><br>
+        {% if job.output_path and job.status == 'done' %}
+          <strong>خروجی:</strong>
+          <code>{{ job.output_path }}</code>
+        {% endif %}
+    </div>
+
+    <div style="margin-top:14px;">
+        <a href="{{ url_for('jobs_list') }}" class="btn">بازگشت به لیست جاب‌ها</a>
+        {% if job.output_path and job.status == 'done' %}
+          <a href="{{ url_for('media_list') }}#job-{{ job.id }}" class="btn" style="margin-right:8px;background:linear-gradient(135deg,#22c55e,#16a34a);">
+            مشاهده مدیا
+          </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

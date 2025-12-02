@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}مدیاها{% endblock %}
+{% block content %}
+
+<div class="card">
+    <h2>فایل‌های خروجی (مدیا)</h2>
+    {% if medias %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>پروژه</th>
+                <th>جاب</th>
+                <th>نوع</th>
+                <th>فایل</th>
+                <th>زمان</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for m in medias %}
+            <tr id="job-{{ m.job_id if m.job_id else '' }}">
+                <td>{{ m.id }}</td>
+                <td>
+                    {% if m.project %}
+                      <a href="{{ url_for('project_detail', project_id=m.project.id) }}">{{ m.project.name }}</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if m.job_id %}
+                      <a href="{{ url_for('jobs_detail', job_id=m.job_id) }}">#{{ m.job_id }}</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                </td>
+                <td>{{ m.media_type }}</td>
+                <td>
+                    <a href="{{ url_for('media_file', media_id=m.id) }}" target="_blank">مشاهده</a>
+                </td>
+                <td style="font-size:11px;color:#9ca3af;">
+                    {{ m.created_at.strftime('%Y-%m-%d %H:%M:%S') if m.created_at else '' }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+      <p style="font-size:12px;color:#9ca3af;">هنوز هیچ مدیای خروجی ساخته نشده است.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

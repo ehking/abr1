@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}پروژه {{ project.name }}{% endblock %}
+{% block content %}
+
+<div class="card">
+    <h2>پروژه: {{ project.name }}</h2>
+    <p style="font-size:12px;color:#9ca3af;margin-top:0;">
+        شناسه: {{ project.id }}
+    </p>
+    <p style="font-size:12px;color:#9ca3af;">
+        <strong>فایل صوتی:</strong>
+        <code style="font-size:11px;">{{ project.audio_path }}</code><br>
+        <strong>فایل ویدیوی خام:</strong>
+        <code style="font-size:11px;">{{ project.video_path }}</code><br>
+        <strong>زمان ایجاد:</strong>
+        {{ project.created_at.strftime('%Y-%m-%d %H:%M:%S') if project.created_at else '' }}
+    </p>
+    <form method="post" action="{{ url_for('project_new_job', project_id=project.id) }}">
+        <button type="submit">ایجاد جاب جدید با همین فایل‌ها</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>جاب‌های این پروژه</h2>
+    {% if jobs %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>وضعیت</th>
+                <th>پیشرفت</th>
+                <th>خروجی</th>
+                <th>زمان</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for j in jobs %}
+            <tr>
+                <td><a href="{{ url_for('jobs_detail', job_id=j.id) }}">{{ j.id }}</a></td>
+                <td><span class="badge {{ j.status }}">{{ j.status }}</span></td>
+                <td>{{ j.progress }}%</td>
+                <td>
+                    {% if j.output_path and j.status == 'done' %}
+                      <a href="{{ url_for('media_list') }}#job-{{ j.id }}">مدیا</a>
+                    {% else %}
+                      -
+                    {% endif %}
+                </td>
+                <td style="font-size:11px;color:#9ca3af;">
+                    {{ j.created_at.strftime('%Y-%m-%d %H:%M:%S') if j.created_at else '' }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+      <p style="font-size:12px;color:#9ca3af;">هنوز هیچ جابی برای این پروژه ثبت نشده است.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>مدیاهای این پروژه</h2>
+    {% if medias %}
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>نوع</th>
+            <th>فایل</th>
+            <th>مرتبط با جاب</th>
+            <th>زمان</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for m in medias %}
+          <tr id="media-{{ m.id }}">
+            <td>{{ m.id }}</td>
+            <td>{{ m.media_type }}</td>
+            <td>
+                <a href="{{ url_for('media_file', media_id=m.id) }}" target="_blank">
+                    مشاهده
+                </a>
+            </td>
+            <td>
+                {% if m.job_id %}
+                  <a href="{{ url_for('jobs_detail', job_id=m.job_id) }}">#{{ m.job_id }}</a>
+                {% else %}
+                  -
+                {% endif %}
+            </td>
+            <td style="font-size:11px;color:#9ca3af;">
+                {{ m.created_at.strftime('%Y-%m-%d %H:%M:%S') if m.created_at else '' }}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+      <p style="font-size:12px;color:#9ca3af;">هنوز مدیایی برای این پروژه تولید نشده است.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

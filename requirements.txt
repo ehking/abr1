@@ -1,0 +1,6 @@
+flask
+sqlalchemy
+manim
+openai-whisper
+torch
+librosa
